@@ -11,15 +11,19 @@ public class testEnemyFollow : MonoBehaviour {
     private Vector2 directionTarget;
     private float distanceTarget;
 
+    [SerializeField] private bool pushed;
+
     private void Start() {
         rb = GetComponent<Rigidbody2D>();
     }
 
 
     private void Update() {
-        calcDirection();
-        calcDistance();
-        moveTarget();
+        if (!pushed) {
+            calcDirection();
+            calcDistance();
+            moveTarget();
+        }
     }
 
     private void calcDirection() {
@@ -28,12 +32,25 @@ public class testEnemyFollow : MonoBehaviour {
     private void calcDistance() {
         distanceTarget = (target.position - transform.position).magnitude;
     }
-
     private void moveTarget() {
         if (distanceAllowedTarget < distanceTarget) {
             rb.velocity = directionTarget * moveSpeed;
         } else {
             rb.velocity = Vector2.zero;
         }
+    }
+
+    public void setPushed() {
+        StartCoroutine(onPush());
+    }
+    IEnumerator onPush() {
+        pushed = true;
+        Vector2 pushdir = (Vector2)(transform.position - target.position).normalized * 10;
+        rb.drag = 5f;
+        rb.velocity = Vector2.zero;
+        rb.AddForce(pushdir, ForceMode2D.Impulse);
+        yield return new WaitForSeconds(1f);
+        rb.drag = 0;
+        pushed = false;
     }
 }
